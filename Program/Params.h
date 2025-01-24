@@ -47,6 +47,7 @@ struct Client
 	double coordY;			// Coordinate Y
 	double serviceDuration; // Service duration
 	double demand;			// Demand
+	double th = 0.;
 	int polarAngle;			// Polar angle of the client around the depot, measured in degrees and truncated for convenience
 };
 
@@ -77,6 +78,7 @@ public:
 	double totalDemand ;									// Total demand required by the clients
 	double maxDemand;										// Maximum demand of a client
 	double maxDist;											// Maximum distance between two clients
+	double T = 0.;
 	std::vector< Client > cli ;								// Vector containing information on each client
 	const std::vector< std::vector< double > >& timeCost;	// Distance matrix
 	std::vector< std::vector< int > > correlatedVertices;	// Neighborhood restrictions: For each client, list of nearby customers
@@ -93,7 +95,9 @@ public:
 		int nbVeh,
 		bool isDurationConstraint,
 		bool verbose,
-		const AlgorithmParameters& ap);
+		const AlgorithmParameters& ap,
+		const std::vector<double>& th = std::vector<double>(),
+		double Tmax = 0.);
 };
 #endif
 
