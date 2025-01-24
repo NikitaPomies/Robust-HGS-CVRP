@@ -11,6 +11,7 @@ set(
         Program/Population.cpp
         Program/Split.cpp
         Program/InstanceCVRPLIB.cpp
+        Program/InstanceZA.cpp
         Program/AlgorithmParameters.cpp
         Program/C_Interface.cpp)
 
