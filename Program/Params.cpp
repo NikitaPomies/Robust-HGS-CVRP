@@ -124,6 +124,46 @@ Params::Params(
 	penaltyDuration = 1;
 	penaltyCapacity = std::max<double>(0.1, std::min<double>(1000., maxDist / maxDemand));
 
+	for (int i = 0; i < nbClients + 1; i++)
+	{
+		for (int j = 0; j < nbClients + 1; j++)
+		{
+			if (i != j)
+			{
+				sor1.emplace_back(i, j, cli[i].th + cli[j].th);
+				sor2.emplace_back(i, j, cli[i].th * cli[j].th);
+			}
+		}
+	}
+
+	std::sort(sor1.begin(), sor1.end(), [](const auto &a, const auto &b)
+			  {
+				  return std::get<2>(a) > std::get<2>(b); // Compare by the weight (3rd element)
+			  });
+	std::sort(sor2.begin(), sor2.end(), [](const auto &a, const auto &b)
+			  {
+				  return std::get<2>(a) > std::get<2>(b); // Compare by the weight (3rd element)
+			  });
+
+	sor1_index.resize(nbClients + 1, std::vector<int>(nbClients + 1, 0));
+	sor2_index.resize(nbClients + 1, std::vector<int>(nbClients + 1, 0));
+
+	// Fill sor1_index with the index of each pair in sor1
+	for (int i = 0; i < sor1.size(); ++i)
+	{
+		int client1 = std::get<0>(sor1[i]); // Get the first client in the pair
+		int client2 = std::get<1>(sor1[i]); // Get the second client in the pair
+		sor1_index[client1][client2] = i;	// Set the index of the pair in sor1
+	}
+
+	// Optionally, fill sor2_index in a similar way (if needed)
+	for (int i = 0; i < sor2.size(); ++i)
+	{
+		int client1 = std::get<0>(sor2[i]); // Get the first client in the pair
+		int client2 = std::get<1>(sor2[i]); // Get the second client in the pair
+		sor2_index[client1][client2] = i;	// Set the index of the pair in sor2
+	}
+
 	if (verbose)
 		std::cout << "----- INSTANCE SUCCESSFULLY LOADED WITH " << nbClients << " CLIENTS AND " << nbVehicles << " VEHICLES" << std::endl;
 }
