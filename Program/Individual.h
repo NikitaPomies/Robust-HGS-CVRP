@@ -34,6 +34,7 @@ struct EvalIndiv
   double penalizedCost = 0.;  // Penalized cost of the solution
   int nbRoutes = 0;           // Number of routes
   double distance = 0.;       // Total distance
+  double robust_cost = 0.;    // max cost (minus real distance)
   double capacityExcess = 0.; // Sum of excess load in all routes
   double durationExcess = 0.; // Sum of excess duration in all routes
   bool isFeasible = false;    // Feasibility status of the individual
