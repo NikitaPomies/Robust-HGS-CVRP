@@ -49,9 +49,12 @@ public:
   std::vector<int> predecessors;                                     // For each node, the predecessor in the solution (can be the depot 0)
   std::multiset<std::pair<double, Individual *>> indivsPerProximity; // The other individuals in the population, ordered by increasing proximity (the set container follows a natural ordering based on the first value of the pair)
   double biasedFitness;                                              // Biased fitness of the solution
+  std::vector<std::vector<int>> is_selected; 
 
   // Measuring cost and feasibility of an Individual from the information of chromR (needs chromR filled and access to Params)
   void evaluateCompleteCost(const Params &params);
+  void computeSelectedEdges(const Params &params);
+  double computeRobustCost(const Params &params, std::vector<std::tuple<int, int, double, double>> &edges);
 
   // Constructor of a random individual containing only a giant tour with a shuffled visit order
   Individual(Params &params);
