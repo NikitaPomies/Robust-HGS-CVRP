@@ -96,7 +96,7 @@ void Individual::evaluateCompleteCost(const Params &params)
 	}
 	eval.robust_cost = robust_cost_1 + robust_cost_2;
 	// std::cout<<"test";
-	// eval.distance += robust_cost_1 + robust_cost_2;
+	eval.distance += robust_cost_1 + robust_cost_2;
 	eval.penalizedCost = eval.distance + eval.capacityExcess * params.penaltyCapacity + eval.durationExcess * params.penaltyDuration;
 	eval.isFeasible = (eval.capacityExcess < MY_EPSILON && eval.durationExcess < MY_EPSILON);
 }
@@ -174,14 +174,14 @@ void Individual::computeSelectedEdges(const Params &params)
 	}
 }
 
-double Individual::computeRobustCost(const Params &params, std::vector<std::tuple<int, int, double, double>> &edges)
+double Individual::computeRobustCost(const Params &params,  std::vector<std::vector<int>> &is_selec)
 {
 	// assume is_selected is correct
 	double S1 = 0.0;
 	double robust_cost_1 = 0.0;
 	for (const auto &edge : params.sor1)
 	{
-		if (is_selected[std::get<0>(edge)][std::get<1>(edge)] == 0)
+		if (is_selec[std::get<0>(edge)][std::get<1>(edge)] == 0)
 			continue;
 
 		if (S1 + 1.0 <= params.T)
@@ -207,7 +207,7 @@ double Individual::computeRobustCost(const Params &params, std::vector<std::tupl
 	double robust_cost_2 = 0.0;
 	for (const auto &edge : params.sor2)
 	{
-		if (is_selected[std::get<0>(edge)][std::get<1>(edge)] == 0)
+		if (is_selec[std::get<0>(edge)][std::get<1>(edge)] == 0)
 			continue;
 
 		if (S2 + 2.0 <= params.T * params.T)

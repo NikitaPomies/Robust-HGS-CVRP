@@ -55,7 +55,7 @@ public:
   // Measuring cost and feasibility of an Individual from the information of chromR (needs chromR filled and access to Params)
   void evaluateCompleteCost(const Params &params);
   void computeSelectedEdges(const Params &params);
-  double computeRobustCost(const Params &params, std::vector<std::tuple<int, int, double, double>> &edges);
+  double computeRobustCost(const Params &params, std::vector<std::vector<int>> &is_selec);
 
   // Constructor of a random individual containing only a giant tour with a shuffled visit order
   Individual(Params &params);

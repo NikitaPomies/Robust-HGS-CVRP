@@ -151,9 +151,9 @@ private:
 
 	/* RELOCATE MOVES */
 	// (Legacy notations: move1...move9 from Prins 2004)
-	bool move1(); // If U is a client node, remove U and insert it after V
-	bool move2(); // If U and X are client nodes, remove them and insert (U,X) after V
-	bool move3(); // If U and X are client nodes, remove them and insert (X,U) after V
+	bool move1(Individual &indiv); // If U is a client node, remove U and insert it after V
+	bool move2(Individual &indiv); // If U and X are client nodes, remove them and insert (U,X) after V
+	bool move3(Individual &indiv); // If U and X are client nodes, remove them and insert (X,U) after V
 
 	/* SWAP MOVES */
 	bool move4(); // If U and V are client nodes, swap U and V
