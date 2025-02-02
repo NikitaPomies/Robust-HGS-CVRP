@@ -31,10 +31,12 @@ SOFTWARE.*/
 
 struct EvalIndiv
 {
-  double penalizedCost = 0.;  // Penalized cost of the solution
-  int nbRoutes = 0;           // Number of routes
-  double distance = 0.;       // Total distance
-  double robust_cost = 0.;    // max cost (minus real distance)
+  double penalizedCost = 0.; // Penalized cost of the solution
+  int nbRoutes = 0;          // Number of routes
+  double distance = 0.;      // Total distance
+  double robust_cost = 0.;   // max cost (minus real distance)
+  double robust_cost_1 = 0.;
+  double robust_cost_2 = 0.;
   double capacityExcess = 0.; // Sum of excess load in all routes
   double durationExcess = 0.; // Sum of excess duration in all routes
   bool isFeasible = false;    // Feasibility status of the individual
@@ -60,8 +62,9 @@ public:
   std::tuple<double, int, int> computeRobustCost(const Params &params, std::vector<std::vector<int>> &is_selec);
   std::tuple<double, int> computeRobustCost1(const Params &params, std::vector<std::vector<int>> &is_selec);
   std::tuple<double, int> computeRobustCost2(const Params &params, std::vector<std::vector<int>> &is_selec);
-  //std::tuple<double, int> updateRobustCost1(const Params &params, std::vector<std::vector<int>> &is_selec);
-  //std::tuple<double, int> updateRobustCost2(const Params &params, std::vector<std::vector<int>> &is_selec);
+  std::tuple<double, int> updateRobustCost1(const Params &params, std::vector<std::vector<int>> &is_selec, std::vector<std::pair<int, int>> &to_delete,
+                                            std::vector<std::pair<int, int>> &to_add);
+  // std::tuple<double, int> updateRobustCost2(const Params &params, std::vector<std::vector<int>> &is_selec);
 
   // Constructor of a random individual containing only a giant tour with a shuffled visit order
   Individual(Params &params);

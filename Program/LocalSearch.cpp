@@ -160,13 +160,36 @@ bool LocalSearch::move1(Individual &indiv)
 		return false;
 
 	std::vector<std::vector<int>> is_selec = indiv.is_selected;
-	is_selec[nodeUPrevIndex][nodeXIndex] = 1;
-	is_selec[nodeUPrevIndex][nodeUIndex] = 0;
-	is_selec[nodeUIndex][nodeXIndex] = 0;
-	is_selec[nodeVIndex][nodeUIndex] = 1;
-	is_selec[nodeUIndex][nodeYIndex] = 1;
-	is_selec[nodeVIndex][nodeYIndex] = 0;
-	auto [new_rc, p1, p2] = indiv.computeRobustCost(params, is_selec);
+
+	std::vector<std::pair<int, int>> edges_to_delete = {
+		{nodeUPrevIndex, nodeUIndex},
+		{nodeUIndex, nodeXIndex},
+		{nodeVIndex, nodeYIndex}};
+
+	std::vector<std::pair<int, int>> edges_to_add = {
+		{nodeUPrevIndex, nodeXIndex},
+		{nodeVIndex, nodeUIndex},
+		{nodeUIndex, nodeYIndex}};
+
+	// Delete edges
+
+	for (const auto &[i, j] : edges_to_delete)
+	{
+		is_selec[i][j] = 0;
+	}
+
+	// Add new edges
+	for (const auto &[i, j] : edges_to_add)
+	{
+		is_selec[i][j] = 1;
+	}
+	// std::cout << c << " " << d << std::endl;
+
+	auto [new_rc1, p1] = indiv.computeRobustCost1(params, is_selec);
+	//auto [new_rc1, p1] = indiv.updateRobustCost1(params, is_selec, edges_to_delete, edges_to_add);
+	auto [new_rc2, p2] = indiv.computeRobustCost2(params, is_selec);
+
+	double new_rc = new_rc1 + new_rc2;
 	double rcostSupp = new_rc - indiv.eval.robust_cost;
 
 	if (costSuppU + costSuppV + rcostSupp > -MY_EPSILON)
@@ -187,6 +210,8 @@ bool LocalSearch::move1(Individual &indiv)
 	indiv.is_selected[nodeUIndex][nodeYIndex] = 1;
 	indiv.is_selected[nodeVIndex][nodeYIndex] = 0;
 	indiv.eval.robust_cost = new_rc;
+	indiv.eval.robust_cost_1 = new_rc1;
+	indiv.eval.robust_cost_2 = new_rc2;
 	indiv.last_edge_type_1 = p1;
 	indiv.last_edge_type_2 = p2;
 
@@ -213,14 +238,33 @@ bool LocalSearch::move2(Individual &indiv)
 		return false;
 
 	std::vector<std::vector<int>> is_selec = indiv.is_selected;
-	is_selec[nodeUPrevIndex][nodeXNextIndex] = 1;
-	is_selec[nodeVIndex][nodeUIndex] = 1;
-	is_selec[nodeXIndex][nodeYIndex] = 1;
-	is_selec[nodeUPrevIndex][nodeUIndex] = 0;
-	is_selec[nodeXIndex][nodeXNextIndex] = 0;
-	is_selec[nodeVIndex][nodeYIndex] = 0;
 
-	auto [new_rc, p1, p2] = indiv.computeRobustCost(params, is_selec);
+	std::vector<std::pair<int, int>> edges_to_delete = {
+		{nodeUPrevIndex, nodeUIndex},
+		{nodeXIndex, nodeXNextIndex},
+		{nodeVIndex, nodeYIndex}};
+
+	std::vector<std::pair<int, int>> edges_to_add = {
+		{nodeUPrevIndex, nodeXNextIndex},
+		{nodeVIndex, nodeUIndex},
+		{nodeXIndex, nodeYIndex}};
+
+	for (const auto &[i, j] : edges_to_delete)
+	{
+		is_selec[i][j] = 0;
+	}
+
+	// Add new edges
+	for (const auto &[i, j] : edges_to_add)
+	{
+		is_selec[i][j] = 1;
+	}
+
+	auto [new_rc1, p1] = indiv.computeRobustCost1(params, is_selec);
+	//auto [new_rc1, p1] = indiv.updateRobustCost1(params, is_selec, edges_to_delete, edges_to_add);
+
+	auto [new_rc2, p2] = indiv.computeRobustCost2(params, is_selec);
+	double new_rc = new_rc1 + new_rc2;
 	double rcostSupp = new_rc - indiv.eval.robust_cost;
 
 	// if (costSuppU + costSuppV > -MY_EPSILON)
@@ -242,6 +286,8 @@ bool LocalSearch::move2(Individual &indiv)
 	indiv.is_selected[nodeXIndex][nodeXNextIndex] = 0;
 	indiv.is_selected[nodeVIndex][nodeYIndex] = 0;
 	indiv.eval.robust_cost = new_rc;
+	indiv.eval.robust_cost_1 = new_rc1;
+	indiv.eval.robust_cost_2 = new_rc2;
 	indiv.last_edge_type_1 = p1;
 	indiv.last_edge_type_2 = p2;
 
@@ -266,15 +312,34 @@ bool LocalSearch::move3(Individual &indiv)
 		return false;
 
 	std::vector<std::vector<int>> is_selec = indiv.is_selected;
-	is_selec[nodeUPrevIndex][nodeXNextIndex] = 1;
-	is_selec[nodeUPrevIndex][nodeXNextIndex] = 1;
-	is_selec[nodeXIndex][nodeUIndex] = 1;
-	is_selec[nodeUIndex][nodeYIndex] = 1;
-	is_selec[nodeUPrevIndex][nodeUIndex] = 0;
-	is_selec[nodeXIndex][nodeXNextIndex] = 0;
-	is_selec[nodeVIndex][nodeYIndex] = 0;
 
-	auto [new_rc, p1, p2] = indiv.computeRobustCost(params, is_selec);
+	std::vector<std::pair<int, int>> edges_to_delete = {
+		{nodeUPrevIndex, nodeUIndex},
+		{nodeUIndex, nodeXIndex},
+		{nodeXIndex, nodeXNextIndex},
+		{nodeVIndex, nodeYIndex}};
+
+	std::vector<std::pair<int, int>> edges_to_add = {
+		{nodeUPrevIndex, nodeXNextIndex}, // Note: this appears twice in your input
+		{nodeXIndex, nodeUIndex},
+		{nodeUIndex, nodeYIndex},
+		{nodeVIndex, nodeXIndex}};
+
+	for (const auto &[i, j] : edges_to_delete)
+	{
+		is_selec[i][j] = 0;
+	}
+
+	// Add new edges
+	for (const auto &[i, j] : edges_to_add)
+	{
+		is_selec[i][j] = 1;
+	}
+
+	//auto [new_rc1, p1] = indiv.updateRobustCost1(params, is_selec, edges_to_delete, edges_to_add);
+	auto [new_rc2, p2] = indiv.computeRobustCost2(params, is_selec);
+	auto [new_rc1, p1] = indiv.computeRobustCost1(params, is_selec);
+	double new_rc = new_rc1 + new_rc2;
 	double rcostSupp = new_rc - indiv.eval.robust_cost;
 	// std::cout<<rcostSupp<<std::endl;
 
@@ -289,14 +354,20 @@ bool LocalSearch::move3(Individual &indiv)
 	if (!intraRouteMove)
 		updateRouteData(routeV);
 
-	indiv.is_selected[nodeUPrevIndex][nodeXNextIndex] = 1;
-	indiv.is_selected[nodeUPrevIndex][nodeXNextIndex] = 1;
-	indiv.is_selected[nodeXIndex][nodeUIndex] = 1;
-	indiv.is_selected[nodeUIndex][nodeYIndex] = 1;
-	indiv.is_selected[nodeUPrevIndex][nodeUIndex] = 0;
-	indiv.is_selected[nodeXIndex][nodeXNextIndex] = 0;
-	indiv.is_selected[nodeVIndex][nodeYIndex] = 0;
+	
+	for (const auto &[i, j] : edges_to_delete)
+	{
+		indiv.is_selected[i][j] = 0;
+	}
+
+	// Add new edges
+	for (const auto &[i, j] : edges_to_add)
+	{
+		indiv.is_selected[i][j] = 1;
+	}
 	indiv.eval.robust_cost = new_rc;
+	indiv.eval.robust_cost_1 = new_rc1;
+	indiv.eval.robust_cost_2 = new_rc2;
 	indiv.last_edge_type_1 = p1;
 	indiv.last_edge_type_2 = p2;
 
