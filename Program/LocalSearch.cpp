@@ -37,8 +37,8 @@ void LocalSearch::run(Individual &indiv, double penaltyCapacityLS, double penalt
 						continue; // RELOCATE
 					if (move2(indiv))
 						continue; // RELOCATE
-					// if (move3(indiv))
-					// 	continue; // RELOCATE
+								  // if (move3(indiv))
+								  // 	continue; // RELOCATE
 								  // if (nodeUIndex <= nodeVIndex && move4())
 								  // 	continue; // SWAP
 								  // if (move5())
@@ -185,11 +185,10 @@ bool LocalSearch::move1(Individual &indiv)
 	}
 	// std::cout << c << " " << d << std::endl;
 
-	//auto [new_rc1, p1] = indiv.computeRobustCost1(params, is_selec);
+	// auto [new_rc1, p1] = indiv.computeRobustCost1(params, is_selec);
 	auto [new_rc1, p1] = indiv.updateRobustCost1(params, is_selec, edges_to_delete, edges_to_add);
 	//auto [new_rc2, p2] = indiv.computeRobustCost2(params, is_selec);
 	auto [new_rc2, p2] = indiv.updateRobustCost2(params, is_selec, edges_to_delete, edges_to_add);
-
 
 	double new_rc = new_rc1 + new_rc2;
 	double rcostSupp = new_rc - indiv.eval.robust_cost;
@@ -205,12 +204,17 @@ bool LocalSearch::move1(Individual &indiv)
 	if (!intraRouteMove)
 		updateRouteData(routeV);
 
-	indiv.is_selected[nodeUPrevIndex][nodeXIndex] = 1;
-	indiv.is_selected[nodeUPrevIndex][nodeUIndex] = 0;
-	indiv.is_selected[nodeUIndex][nodeXIndex] = 0;
-	indiv.is_selected[nodeVIndex][nodeUIndex] = 1;
-	indiv.is_selected[nodeUIndex][nodeYIndex] = 1;
-	indiv.is_selected[nodeVIndex][nodeYIndex] = 0;
+	for (const auto &[i, j] : edges_to_delete)
+	{
+		indiv.is_selected[i][j] = 0;
+	}
+
+	// Add new edges
+	for (const auto &[i, j] : edges_to_add)
+	{
+		indiv.is_selected[i][j] = 1;
+	}
+
 	indiv.eval.robust_cost = new_rc;
 	indiv.eval.robust_cost_1 = new_rc1;
 	indiv.eval.robust_cost_2 = new_rc2;
@@ -262,7 +266,7 @@ bool LocalSearch::move2(Individual &indiv)
 		is_selec[i][j] = 1;
 	}
 
-	//auto [new_rc1, p1] = indiv.computeRobustCost1(params, is_selec);
+	// auto [new_rc1, p1] = indiv.computeRobustCost1(params, is_selec);
 	auto [new_rc1, p1] = indiv.updateRobustCost1(params, is_selec, edges_to_delete, edges_to_add);
 
 	//auto [new_rc2, p2] = indiv.computeRobustCost2(params, is_selec);
@@ -283,12 +287,17 @@ bool LocalSearch::move2(Individual &indiv)
 	if (!intraRouteMove)
 		updateRouteData(routeV);
 
-	indiv.is_selected[nodeUPrevIndex][nodeXNextIndex] = 1;
-	indiv.is_selected[nodeVIndex][nodeUIndex] = 1;
-	indiv.is_selected[nodeXIndex][nodeYIndex] = 1;
-	indiv.is_selected[nodeUPrevIndex][nodeUIndex] = 0;
-	indiv.is_selected[nodeXIndex][nodeXNextIndex] = 0;
-	indiv.is_selected[nodeVIndex][nodeYIndex] = 0;
+	for (const auto &[i, j] : edges_to_delete)
+	{
+		indiv.is_selected[i][j] = 0;
+	}
+
+	// Add new edges
+	for (const auto &[i, j] : edges_to_add)
+	{
+		indiv.is_selected[i][j] = 1;
+	};
+
 	indiv.eval.robust_cost = new_rc;
 	indiv.eval.robust_cost_1 = new_rc1;
 	indiv.eval.robust_cost_2 = new_rc2;
@@ -340,7 +349,7 @@ bool LocalSearch::move3(Individual &indiv)
 		is_selec[i][j] = 1;
 	}
 
-	//auto [new_rc1, p1] = indiv.updateRobustCost1(params, is_selec, edges_to_delete, edges_to_add);
+	// auto [new_rc1, p1] = indiv.updateRobustCost1(params, is_selec, edges_to_delete, edges_to_add);
 	auto [new_rc2, p2] = indiv.computeRobustCost2(params, is_selec);
 	auto [new_rc1, p1] = indiv.computeRobustCost1(params, is_selec);
 	double new_rc = new_rc1 + new_rc2;
@@ -358,7 +367,6 @@ bool LocalSearch::move3(Individual &indiv)
 	if (!intraRouteMove)
 		updateRouteData(routeV);
 
-	
 	for (const auto &[i, j] : edges_to_delete)
 	{
 		indiv.is_selected[i][j] = 0;
