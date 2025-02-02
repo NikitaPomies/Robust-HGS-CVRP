@@ -187,7 +187,9 @@ bool LocalSearch::move1(Individual &indiv)
 
 	//auto [new_rc1, p1] = indiv.computeRobustCost1(params, is_selec);
 	auto [new_rc1, p1] = indiv.updateRobustCost1(params, is_selec, edges_to_delete, edges_to_add);
-	auto [new_rc2, p2] = indiv.computeRobustCost2(params, is_selec);
+	//auto [new_rc2, p2] = indiv.computeRobustCost2(params, is_selec);
+	auto [new_rc2, p2] = indiv.updateRobustCost2(params, is_selec, edges_to_delete, edges_to_add);
+
 
 	double new_rc = new_rc1 + new_rc2;
 	double rcostSupp = new_rc - indiv.eval.robust_cost;
@@ -263,7 +265,9 @@ bool LocalSearch::move2(Individual &indiv)
 	//auto [new_rc1, p1] = indiv.computeRobustCost1(params, is_selec);
 	auto [new_rc1, p1] = indiv.updateRobustCost1(params, is_selec, edges_to_delete, edges_to_add);
 
-	auto [new_rc2, p2] = indiv.computeRobustCost2(params, is_selec);
+	//auto [new_rc2, p2] = indiv.computeRobustCost2(params, is_selec);
+	auto [new_rc2, p2] = indiv.updateRobustCost2(params, is_selec, edges_to_delete, edges_to_add);
+
 	double new_rc = new_rc1 + new_rc2;
 	double rcostSupp = new_rc - indiv.eval.robust_cost;
 

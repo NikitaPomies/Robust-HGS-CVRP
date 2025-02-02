@@ -64,6 +64,9 @@ public:
   std::tuple<double, int> computeRobustCost2(const Params &params, std::vector<std::vector<int>> &is_selec);
   std::tuple<double, int> updateRobustCost1(const Params &params, std::vector<std::vector<int>> &is_selec, std::vector<std::pair<int, int>> &to_delete,
                                             std::vector<std::pair<int, int>> &to_add);
+  std::tuple<double, int> updateRobustCost2(const Params &params, std::vector<std::vector<int>> &is_selec, std::vector<std::pair<int, int>> &to_delete,
+                                            std::vector<std::pair<int, int>> &to_add);
+
   // std::tuple<double, int> updateRobustCost2(const Params &params, std::vector<std::vector<int>> &is_selec);
 
   // Constructor of a random individual containing only a giant tour with a shuffled visit order

@@ -234,3 +234,29 @@ std::tuple<double, int> Individual::updateRobustCost1(const Params &params, std:
 	else
 		return computeRobustCost1(params, is_selec);
 }
+
+
+
+std::tuple<double, int> Individual::updateRobustCost2(const Params &params, std::vector<std::vector<int>> &is_selec, std::vector<std::pair<int, int>> &to_delete,
+													  std::vector<std::pair<int, int>> &to_add)
+{
+	int c = 0;
+	int d = 0;
+
+	for (const auto &[i, j] : to_delete)
+	{
+		if (params.sor2_index[i][j] <= last_edge_type_2)
+			d += 1;
+	}
+
+	// Add new edges
+	for (const auto &[i, j] : to_add)
+	{
+		if (params.sor2_index[i][j] <= last_edge_type_2)
+			c += 1;
+	}
+	if (c == 0 && d == 0)
+		return std::make_tuple(eval.robust_cost_2, last_edge_type_2);
+	else
+		return computeRobustCost2(params, is_selec);
+}
