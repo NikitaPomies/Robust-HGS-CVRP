@@ -185,8 +185,8 @@ bool LocalSearch::move1(Individual &indiv)
 	}
 	// std::cout << c << " " << d << std::endl;
 
-	auto [new_rc1, p1] = indiv.computeRobustCost1(params, is_selec);
-	//auto [new_rc1, p1] = indiv.updateRobustCost1(params, is_selec, edges_to_delete, edges_to_add);
+	//auto [new_rc1, p1] = indiv.computeRobustCost1(params, is_selec);
+	auto [new_rc1, p1] = indiv.updateRobustCost1(params, is_selec, edges_to_delete, edges_to_add);
 	auto [new_rc2, p2] = indiv.computeRobustCost2(params, is_selec);
 
 	double new_rc = new_rc1 + new_rc2;
@@ -260,8 +260,8 @@ bool LocalSearch::move2(Individual &indiv)
 		is_selec[i][j] = 1;
 	}
 
-	auto [new_rc1, p1] = indiv.computeRobustCost1(params, is_selec);
-	//auto [new_rc1, p1] = indiv.updateRobustCost1(params, is_selec, edges_to_delete, edges_to_add);
+	//auto [new_rc1, p1] = indiv.computeRobustCost1(params, is_selec);
+	auto [new_rc1, p1] = indiv.updateRobustCost1(params, is_selec, edges_to_delete, edges_to_add);
 
 	auto [new_rc2, p2] = indiv.computeRobustCost2(params, is_selec);
 	double new_rc = new_rc1 + new_rc2;
