@@ -166,7 +166,7 @@ bool LocalSearch::move1(Individual &indiv)
 	is_selec[nodeVIndex][nodeUIndex] = 1;
 	is_selec[nodeUIndex][nodeYIndex] = 1;
 	is_selec[nodeVIndex][nodeYIndex] = 0;
-	double new_rc = indiv.computeRobustCost(params, is_selec);
+	auto [new_rc, p1, p2] = indiv.computeRobustCost(params, is_selec);
 	double rcostSupp = new_rc - indiv.eval.robust_cost;
 
 	if (costSuppU + costSuppV + rcostSupp > -MY_EPSILON)
@@ -187,6 +187,8 @@ bool LocalSearch::move1(Individual &indiv)
 	indiv.is_selected[nodeUIndex][nodeYIndex] = 1;
 	indiv.is_selected[nodeVIndex][nodeYIndex] = 0;
 	indiv.eval.robust_cost = new_rc;
+	indiv.last_edge_type_1 = p1;
+	indiv.last_edge_type_2 = p2;
 
 	return true;
 }
@@ -218,9 +220,8 @@ bool LocalSearch::move2(Individual &indiv)
 	is_selec[nodeXIndex][nodeXNextIndex] = 0;
 	is_selec[nodeVIndex][nodeYIndex] = 0;
 
-	double new_rc = indiv.computeRobustCost(params, is_selec);
+	auto [new_rc, p1, p2] = indiv.computeRobustCost(params, is_selec);
 	double rcostSupp = new_rc - indiv.eval.robust_cost;
-
 
 	// if (costSuppU + costSuppV > -MY_EPSILON)
 	if (costSuppU + costSuppV + rcostSupp > -MY_EPSILON)
@@ -241,6 +242,8 @@ bool LocalSearch::move2(Individual &indiv)
 	indiv.is_selected[nodeXIndex][nodeXNextIndex] = 0;
 	indiv.is_selected[nodeVIndex][nodeYIndex] = 0;
 	indiv.eval.robust_cost = new_rc;
+	indiv.last_edge_type_1 = p1;
+	indiv.last_edge_type_2 = p2;
 
 	return true;
 }
@@ -271,10 +274,9 @@ bool LocalSearch::move3(Individual &indiv)
 	is_selec[nodeXIndex][nodeXNextIndex] = 0;
 	is_selec[nodeVIndex][nodeYIndex] = 0;
 
-	double new_rc = indiv.computeRobustCost(params, is_selec);
+	auto [new_rc, p1, p2] = indiv.computeRobustCost(params, is_selec);
 	double rcostSupp = new_rc - indiv.eval.robust_cost;
-	//std::cout<<rcostSupp<<std::endl;
-
+	// std::cout<<rcostSupp<<std::endl;
 
 	if (costSuppU + costSuppV + rcostSupp > -MY_EPSILON)
 		return false;
@@ -295,6 +297,8 @@ bool LocalSearch::move3(Individual &indiv)
 	indiv.is_selected[nodeXIndex][nodeXNextIndex] = 0;
 	indiv.is_selected[nodeVIndex][nodeYIndex] = 0;
 	indiv.eval.robust_cost = new_rc;
+	indiv.last_edge_type_1 = p1;
+	indiv.last_edge_type_2 = p2;
 
 	return true;
 }

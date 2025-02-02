@@ -43,57 +43,12 @@ void Individual::evaluateCompleteCost(const Params &params)
 		}
 	}
 
-	double S1 = 0.0;
-	double robust_cost_1 = 0.0;
-	for (const auto &edge : params.sor1)
-	{
-		if (is_selected[std::get<0>(edge)][std::get<1>(edge)] == 0)
-			continue;
+	auto [robust_cost_1, p1] = computeRobustCost1(params, is_selected);
 
-		if (S1 + 1.0 <= params.T)
-		{
-			// Can take full item
-			robust_cost_1 += std::get<2>(edge);
-			S1 += 1.0;
-		}
-		else
-		{
-			// Take fractional part
-			double remaining = params.T - S1;
-			if (remaining > 0)
-			{
-				robust_cost_1 += remaining * std::get<2>(edge);
-				S1 += remaining;
-			}
-			break; // We've reached params.T, no need to continue
-		}
-	}
+	auto [robust_cost_2, p2] = computeRobustCost2(params, is_selected);
+	last_edge_type_1 = p1;
+	last_edge_type_2 = p2;
 
-	double S2 = 0.0;
-	double robust_cost_2 = 0.0;
-	for (const auto &edge : params.sor2)
-	{
-		if (is_selected[std::get<0>(edge)][std::get<1>(edge)] == 0)
-			continue;
-
-		if (S2 + 2.0 <= params.T * params.T)
-		{
-			// Can take full item
-			robust_cost_2 += 2.0 * std::get<2>(edge);
-			S2 += 2.0;
-		}
-		else
-		{
-			// Take fractional part
-			double remaining = params.T * params.T - S2;
-			if (remaining > 0)
-			{
-				robust_cost_2 += remaining * std::get<2>(edge);
-				S2 += remaining;
-			}
-			break; // We've reached params.T, no need to continue
-		}
-	}
 	eval.robust_cost = robust_cost_1 + robust_cost_2;
 	// std::cout<<"test";
 	eval.distance += robust_cost_1 + robust_cost_2;
@@ -174,13 +129,23 @@ void Individual::computeSelectedEdges(const Params &params)
 	}
 }
 
-double Individual::computeRobustCost(const Params &params,  std::vector<std::vector<int>> &is_selec)
+std::tuple<double, int, int> Individual::computeRobustCost(const Params &params, std::vector<std::vector<int>> &is_selec)
+{
+	auto [robust_cost_1, p1] = computeRobustCost1(params, is_selec);
+	auto [robust_cost_2, p2] = computeRobustCost2(params, is_selec);
+
+	return std::make_tuple(robust_cost_1 + robust_cost_2, p1, p2);
+}
+
+std::tuple<double, int> Individual::computeRobustCost1(const Params &params, std::vector<std::vector<int>> &is_selec)
 {
 	// assume is_selected is correct
 	double S1 = 0.0;
 	double robust_cost_1 = 0.0;
-	for (const auto &edge : params.sor1)
+	int last_idx = 0;
+	for (int i = 0; i < params.sor1.size(); i++)
 	{
+		auto &edge = params.sor1[i];
 		if (is_selec[std::get<0>(edge)][std::get<1>(edge)] == 0)
 			continue;
 
@@ -189,6 +154,7 @@ double Individual::computeRobustCost(const Params &params,  std::vector<std::vec
 			// Can take full item
 			robust_cost_1 += std::get<2>(edge);
 			S1 += 1.0;
+			last_idx = i;
 		}
 		else
 		{
@@ -203,10 +169,19 @@ double Individual::computeRobustCost(const Params &params,  std::vector<std::vec
 		}
 	}
 
+	return std::make_tuple(robust_cost_1, last_idx);
+}
+
+std::tuple<double, int> Individual::computeRobustCost2(const Params &params, std::vector<std::vector<int>> &is_selec)
+{
+
 	double S2 = 0.0;
 	double robust_cost_2 = 0.0;
-	for (const auto &edge : params.sor2)
+	int last_idx = 0;
+
+	for (int i = 0; i < params.sor2.size(); i++)
 	{
+		auto &edge = params.sor2[i];
 		if (is_selec[std::get<0>(edge)][std::get<1>(edge)] == 0)
 			continue;
 
@@ -215,6 +190,7 @@ double Individual::computeRobustCost(const Params &params,  std::vector<std::vec
 			// Can take full item
 			robust_cost_2 += 2.0 * std::get<2>(edge);
 			S2 += 2.0;
+			last_idx = i;
 		}
 		else
 		{
@@ -224,10 +200,12 @@ double Individual::computeRobustCost(const Params &params,  std::vector<std::vec
 			{
 				robust_cost_2 += remaining * std::get<2>(edge);
 				S2 += remaining;
+				last_idx = i;
 			}
 			break; // We've reached params.T, no need to continue
 		}
 	}
 
-	return robust_cost_1 + robust_cost_2;
+	return std::make_tuple(robust_cost_2, last_idx);
 }
+
