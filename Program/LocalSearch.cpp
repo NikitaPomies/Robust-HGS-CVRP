@@ -53,21 +53,21 @@ void LocalSearch::run(Individual &indiv, double penaltyCapacityLS, double penalt
 								  // 	continue; // 2-OPT*
 
 					// Trying moves that insert nodeU directly after the depot
-					// if (nodeV->prev->isDepot)
-					// {
-					// 	nodeV = nodeV->prev;
-					// 	setLocalVariablesRouteV();
-					// 	if (move1(indiv))
-					// 		continue; // RELOCATE
-					// 	if (move2(indiv))
-					// 		continue; // RELOCATE
-					// 	if (move3(indiv))
-					// 		continue; // RELOCATE
-					// 	if (!intraRouteMove && move8())
-					// 		continue; // 2-OPT*
-					// 	if (!intraRouteMove && move9())
-					// 		continue; // 2-OPT*
-					// }
+					if (nodeV->prev->isDepot)
+					{
+						nodeV = nodeV->prev;
+						setLocalVariablesRouteV();
+						if (move1(indiv))
+							continue; // RELOCATE
+						if (move2(indiv))
+							continue; // RELOCATE
+									  // 	if (move3(indiv))
+									  // 		continue; // RELOCATE
+									  // 	if (!intraRouteMove && move8())
+									  // 		continue; // 2-OPT*
+									  // 	if (!intraRouteMove && move9())
+									  // 		continue; // 2-OPT*
+					}
 				}
 			}
 
@@ -485,16 +485,40 @@ bool LocalSearch::move6()
 	return true;
 }
 
-bool LocalSearch::move7()
+bool LocalSearch::move7(Individual &indiv)
 {
+	//Not functionnal right.
 	if (nodeU->position > nodeV->position)
+		return false;
+
+	if (nodeU->next == nodeV)
 		return false;
 
 	double cost = params.timeCost[nodeUIndex][nodeVIndex] + params.timeCost[nodeXIndex][nodeYIndex] - params.timeCost[nodeUIndex][nodeXIndex] - params.timeCost[nodeVIndex][nodeYIndex] + nodeV->cumulatedReversalDistance - nodeX->cumulatedReversalDistance;
 
-	if (cost > -MY_EPSILON)
-		return false;
-	if (nodeU->next == nodeV)
+	// TODO : Reversal distance should be handled for asymmetric instances. is_selec should be reversed too
+
+	std::vector<std::vector<int>> is_selec = indiv.is_selected;
+
+	std::vector<std::pair<int, int>> edges_to_delete = {
+		{nodeUIndex, nodeXIndex},
+		{nodeVIndex, nodeYIndex}};
+
+	std::vector<std::pair<int, int>> edges_to_add = {
+		{nodeUIndex, nodeVIndex},
+		{nodeXIndex, nodeYIndex},
+	};
+
+	updateisSelectedEdges(is_selec, edges_to_delete, edges_to_add);
+
+	auto [new_rc1, p1] = indiv.updateRobustCost1(params, is_selec, edges_to_delete, edges_to_add);
+	// auto [new_rc2, p2] = indiv.computeRobustCost2(params, is_selec);
+	auto [new_rc2, p2] = indiv.updateRobustCost2(params, is_selec, edges_to_delete, edges_to_add);
+
+	double new_rc = new_rc1 + new_rc2;
+	double rcostSupp = new_rc - indiv.eval.robust_cost;
+
+	if (cost + rcostSupp > -MY_EPSILON)
 		return false;
 
 	Node *nodeNum = nodeX->next;
@@ -517,6 +541,7 @@ bool LocalSearch::move7()
 	nbMoves++; // Increment move counter before updating route data
 	searchCompleted = false;
 	updateRouteData(routeU);
+	updateisSelectedEdges(indiv.is_selected, edges_to_delete, edges_to_add);
 	return true;
 }
 
