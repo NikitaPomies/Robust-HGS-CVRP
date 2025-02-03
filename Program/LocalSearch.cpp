@@ -215,16 +215,8 @@ bool LocalSearch::move1(Individual &indiv)
 
 	// Delete edges
 
-	for (const auto &[i, j] : edges_to_delete)
-	{
-		is_selec[i][j] = 0;
-	}
+	updateisSelectedEdges(is_selec, edges_to_delete, edges_to_add);
 
-	// Add new edges
-	for (const auto &[i, j] : edges_to_add)
-	{
-		is_selec[i][j] = 1;
-	}
 	// std::cout << c << " " << d << std::endl;
 
 	// auto [new_rc1, p1] = indiv.computeRobustCost1(params, is_selec);
@@ -246,16 +238,7 @@ bool LocalSearch::move1(Individual &indiv)
 	if (!intraRouteMove)
 		updateRouteData(routeV);
 
-	for (const auto &[i, j] : edges_to_delete)
-	{
-		indiv.is_selected[i][j] = 0;
-	}
-
-	// Add new edges
-	for (const auto &[i, j] : edges_to_add)
-	{
-		indiv.is_selected[i][j] = 1;
-	}
+	updateisSelectedEdges(indiv.is_selected, edges_to_delete, edges_to_add);
 
 	indiv.eval.robust_cost = new_rc;
 	indiv.eval.robust_cost_1 = new_rc1;
