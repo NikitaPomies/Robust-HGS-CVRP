@@ -37,20 +37,20 @@ void LocalSearch::run(Individual &indiv, double penaltyCapacityLS, double penalt
 						continue; // RELOCATE
 					if (move2(indiv))
 						continue; // RELOCATE
-								  // if (move3(indiv))
-								  // 	continue; // RELOCATE
-								  // if (nodeUIndex <= nodeVIndex && move4())
-								  // 	continue; // SWAP
-								  // if (move5())
-								  // 	continue; // SWAP
-								  // if (nodeUIndex <= nodeVIndex && move6())
-								  // 	continue; // SWAP
-								  // if (intraRouteMove && move7())
-								  // 	continue; // 2-OPT
-								  // if (!intraRouteMove && move8())
-								  // 	continue; // 2-OPT*
-								  // if (!intraRouteMove && move9())
-								  // 	continue; // 2-OPT*
+					// if (move3(indiv))
+					// 	continue; // RELOCATE
+					if (nodeUIndex <= nodeVIndex && move4(indiv))
+						continue; // SWAP
+					if (move5(indiv))
+						continue; // SWAP
+					// // if (nodeUIndex <= nodeVIndex && move6())
+					// 	continue; // SWAP
+					// if (intraRouteMove && move7())
+					// 	continue; // 2-OPT
+					// if (!intraRouteMove && move8())
+					// 	continue; // 2-OPT*
+					// if (!intraRouteMove && move9())
+					// 	continue; // 2-OPT*
 
 					// Trying moves that insert nodeU directly after the depot
 					if (nodeV->prev->isDepot)
@@ -154,6 +154,7 @@ void updateisSelectedEdges(std::vector<std::vector<int>> &is_selected, std::vect
 			is_selected[i][j] = 0;
 		}
 		else
+
 			is_selected[i][j] -= 1;
 
 		if (is_selected[i][j] < 0)
@@ -393,7 +394,7 @@ bool LocalSearch::move3(Individual &indiv)
 	return true;
 }
 
-bool LocalSearch::move4()
+bool LocalSearch::move4(Individual &indiv)
 {
 	double costSuppU = params.timeCost[nodeUPrevIndex][nodeVIndex] + params.timeCost[nodeVIndex][nodeXIndex] - params.timeCost[nodeUPrevIndex][nodeUIndex] - params.timeCost[nodeUIndex][nodeXIndex];
 	double costSuppV = params.timeCost[nodeVPrevIndex][nodeUIndex] + params.timeCost[nodeUIndex][nodeYIndex] - params.timeCost[nodeVPrevIndex][nodeVIndex] - params.timeCost[nodeVIndex][nodeYIndex];
@@ -409,9 +410,35 @@ bool LocalSearch::move4()
 		costSuppV += penaltyExcessDuration(routeV->duration + costSuppV - serviceV + serviceU) + penaltyExcessLoad(routeV->load + loadU - loadV) - routeV->penalty;
 	}
 
-	if (costSuppU + costSuppV > -MY_EPSILON)
-		return false;
 	if (nodeUIndex == nodeVPrevIndex || nodeUIndex == nodeYIndex)
+		return false;
+
+	std::vector<std::vector<int>> is_selec = indiv.is_selected;
+
+	std::vector<std::pair<int, int>> edges_to_delete = {
+		{nodeUPrevIndex, nodeUIndex},
+		{nodeUIndex, nodeXIndex},
+		{nodeVPrevIndex, nodeVIndex},
+		{nodeVIndex, nodeYIndex}};
+
+	std::vector<std::pair<int, int>> edges_to_add = {
+		{nodeUPrevIndex, nodeVIndex},
+		{nodeVIndex, nodeXIndex},
+		{nodeVPrevIndex, nodeUIndex},
+		{nodeUIndex, nodeYIndex}};
+
+	updateisSelectedEdges(is_selec, edges_to_delete, edges_to_add);
+
+	// auto [new_rc1, p1] = indiv.computeRobustCost1(params, is_selec);
+	auto [new_rc1, p1] = indiv.updateRobustCost1(params, is_selec, edges_to_delete, edges_to_add);
+
+	// auto [new_rc2, p2] = indiv.computeRobustCost2(params, is_selec);
+	auto [new_rc2, p2] = indiv.updateRobustCost2(params, is_selec, edges_to_delete, edges_to_add);
+
+	double new_rc = new_rc1 + new_rc2;
+	double rcostSupp = new_rc - indiv.eval.robust_cost;
+
+	if (costSuppU + costSuppV + rcostSupp > -MY_EPSILON)
 		return false;
 
 	swapNode(nodeU, nodeV);
@@ -420,10 +447,19 @@ bool LocalSearch::move4()
 	updateRouteData(routeU);
 	if (!intraRouteMove)
 		updateRouteData(routeV);
+
+	updateisSelectedEdges(indiv.is_selected, edges_to_delete, edges_to_add);
+
+	indiv.eval.robust_cost = new_rc;
+	indiv.eval.robust_cost_1 = new_rc1;
+	indiv.eval.robust_cost_2 = new_rc2;
+	indiv.last_edge_type_1 = p1;
+	indiv.last_edge_type_2 = p2;
+
 	return true;
 }
 
-bool LocalSearch::move5()
+bool LocalSearch::move5(Individual &indiv)
 {
 	double costSuppU = params.timeCost[nodeUPrevIndex][nodeVIndex] + params.timeCost[nodeVIndex][nodeXNextIndex] - params.timeCost[nodeUPrevIndex][nodeUIndex] - params.timeCost[nodeXIndex][nodeXNextIndex];
 	double costSuppV = params.timeCost[nodeVPrevIndex][nodeUIndex] + params.timeCost[nodeXIndex][nodeYIndex] - params.timeCost[nodeVPrevIndex][nodeVIndex] - params.timeCost[nodeVIndex][nodeYIndex];
@@ -439,9 +475,35 @@ bool LocalSearch::move5()
 		costSuppV += penaltyExcessDuration(routeV->duration + costSuppV + params.timeCost[nodeUIndex][nodeXIndex] - serviceV + serviceU + serviceX) + penaltyExcessLoad(routeV->load + loadU + loadX - loadV) - routeV->penalty;
 	}
 
-	if (costSuppU + costSuppV > -MY_EPSILON)
-		return false;
 	if (nodeU == nodeV->prev || nodeX == nodeV->prev || nodeU == nodeY || nodeX->isDepot)
+		return false;
+
+	std::vector<std::pair<int, int>> edges_to_delete = {
+		{nodeUPrevIndex, nodeUIndex},
+		{nodeXIndex, nodeXNextIndex},
+		{nodeVPrevIndex, nodeVIndex},
+		{nodeVIndex, nodeYIndex}};
+
+	std::vector<std::pair<int, int>> edges_to_add = {
+		{nodeUPrevIndex, nodeVIndex},
+		{nodeVIndex, nodeXNextIndex},
+		{nodeVPrevIndex, nodeUIndex},
+		{nodeXIndex, nodeYIndex}};
+
+	std::vector<std::vector<int>> is_selec = indiv.is_selected;
+
+	updateisSelectedEdges(is_selec, edges_to_delete, edges_to_add);
+
+	// auto [new_rc1, p1] = indiv.computeRobustCost1(params, is_selec);
+	auto [new_rc1, p1] = indiv.updateRobustCost1(params, is_selec, edges_to_delete, edges_to_add);
+
+	// auto [new_rc2, p2] = indiv.computeRobustCost2(params, is_selec);
+	auto [new_rc2, p2] = indiv.updateRobustCost2(params, is_selec, edges_to_delete, edges_to_add);
+
+	double new_rc = new_rc1 + new_rc2;
+	double rcostSupp = new_rc - indiv.eval.robust_cost;
+
+	if (costSuppU + costSuppV + rcostSupp > -MY_EPSILON)
 		return false;
 
 	swapNode(nodeU, nodeV);
@@ -451,6 +513,15 @@ bool LocalSearch::move5()
 	updateRouteData(routeU);
 	if (!intraRouteMove)
 		updateRouteData(routeV);
+
+	updateisSelectedEdges(indiv.is_selected, edges_to_delete, edges_to_add);
+
+	indiv.eval.robust_cost = new_rc;
+	indiv.eval.robust_cost_1 = new_rc1;
+	indiv.eval.robust_cost_2 = new_rc2;
+	indiv.last_edge_type_1 = p1;
+	indiv.last_edge_type_2 = p2;
+
 	return true;
 }
 
@@ -487,7 +558,7 @@ bool LocalSearch::move6()
 
 bool LocalSearch::move7(Individual &indiv)
 {
-	//Not functionnal right.
+	// Not functionnal right.
 	if (nodeU->position > nodeV->position)
 		return false;
 

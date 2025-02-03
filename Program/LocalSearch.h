@@ -165,9 +165,9 @@ private:
 	bool move3(Individual &indiv); // If U and X are client nodes, remove them and insert (X,U) after V
 
 	/* SWAP MOVES */
-	bool move4(); // If U and V are client nodes, swap U and V
-	bool move5(); // If U, X and V are client nodes, swap (U,X) and V
-	bool move6(); // If (U,X) and (V,Y) are client nodes, swap (U,X) and (V,Y)
+	bool move4(Individual &indiv); // If U and V are client nodes, swap U and V
+	bool move5(Individual &indiv); // If U, X and V are client nodes, swap (U,X) and V
+	bool move6();				   // If (U,X) and (V,Y) are client nodes, swap (U,X) and (V,Y)
 
 	/* 2-OPT and 2-OPT* MOVES */
 	bool move7(Individual &indiv); // If route(U) == route(V), replace (U,X) and (V,Y) by (U,V) and (X,Y)
