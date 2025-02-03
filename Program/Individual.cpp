@@ -283,34 +283,48 @@ std::tuple<double, int> Individual::updateRobustCost1(const Params &params, std:
 	}
 	if (c == 0 && d == 0)
 		return std::make_tuple(eval.robust_cost_1, last_edge_type_1);
-	if (c == 0 && d > 0)
-	{
-		auto [new_p1, add_cost] = movePointerRight(params, is_selec, last_edge_type_1, d, 1);
-		return std::make_tuple(new_rc + add_cost, new_p1);
-	}
-	if (d == 0 && c > 0)
-	{
-		auto [new_p1, add_cost] = movePointerLeft(params, is_selec, last_edge_type_1, c, 1);
+	// if (c == 0 && d > 0)
+	// {
+	// 	auto [new_p1, add_cost] = movePointerRight(params, is_selec, last_edge_type_1, d, 1);
+	// 	return std::make_tuple(new_rc + add_cost, new_p1);
+	// }
+	// if (d == 0 && c > 0)
+	// {
+	// 	auto [new_p1, add_cost] = movePointerLeft(params, is_selec, last_edge_type_1, c, 1);
 
-		return std::make_tuple(new_rc + add_cost, new_p1);
-	}
+	// 	return std::make_tuple(new_rc + add_cost, new_p1);
+	// }
 	if (d == c)
 	{
 		auto [new_p1, add_cost] = movePointerLeft(params, is_selec, last_edge_type_1, 0, 1);
 
 		return std::make_tuple(new_rc + add_cost, new_p1);
 	}
-	if (c == 2 && d == 1)
-	{
-		auto [new_p1, add_cost] = movePointerLeft(params, is_selec, last_edge_type_1, 1, 1);
+	// if (c == 2 && d == 1)
+	// {
+	// 	auto [new_p1, add_cost] = movePointerLeft(params, is_selec, last_edge_type_1, 1, 1);
 
-		return std::make_tuple(new_rc + add_cost, new_p1);
+	// 	return std::make_tuple(new_rc + add_cost, new_p1);
+	// }
+	// if (d == 2 && c == 1)
+	// {
+	// 	auto [new_p1, add_cost] = movePointerRight(params, is_selec, last_edge_type_1, 1, 1);
+
+	// 	return std::make_tuple(new_rc + add_cost, new_p1);
+	// }
+
+	if (d > c)
+
+	{
+		auto [new_p2, add_cost] = movePointerRight(params, is_selec, last_edge_type_1, d - c, 1);
+
+		return std::make_tuple(new_rc + add_cost, new_p2);
 	}
-	if (d == 2 && c == 1)
+	if (c > d)
 	{
-		auto [new_p1, add_cost] = movePointerRight(params, is_selec, last_edge_type_1, 1, 1);
+		auto [new_p2, add_cost] = movePointerLeft(params, is_selec, last_edge_type_1, c - d, 1);
 
-		return std::make_tuple(new_rc + add_cost, new_p1);
+		return std::make_tuple(new_rc + add_cost, new_p2);
 	}
 
 	else
@@ -349,52 +363,65 @@ std::tuple<double, int> Individual::updateRobustCost2(const Params &params, std:
 	if (c == 0 && d == 0)
 		return std::make_tuple(eval.robust_cost_2, last_edge_type_2);
 
-	if (c == 0 && d > 0)
-	{
-		auto [new_p2, add_cost] = movePointerRight(params, is_selec, last_edge_type_2, d, 2);
+	// if (c == 0 && d > 0)
+	// {
+	// 	auto [new_p2, add_cost] = movePointerRight(params, is_selec, last_edge_type_2, d, 2);
 
-		return std::make_tuple(new_rc + add_cost, new_p2);
-	}
-	if (d == 0 && c > 0)
-	{
-		auto [new_p2, add_cost] = movePointerLeft(params, is_selec, last_edge_type_2, c, 2);
+	// 	return std::make_tuple(new_rc + add_cost, new_p2);
+	// }
+	// if (d == 0 && c > 0)
+	// {
+	// 	auto [new_p2, add_cost] = movePointerLeft(params, is_selec, last_edge_type_2, c, 2);
 
-		return std::make_tuple(new_rc + add_cost, new_p2);
-	}
+	// 	return std::make_tuple(new_rc + add_cost, new_p2);
+	// }
 	if (d == c)
 	{
 		auto [new_p2, add_cost] = movePointerLeft(params, is_selec, last_edge_type_2, 0, 2);
 
 		return std::make_tuple(new_rc + add_cost, new_p2);
 	}
-	if (c == 2 && d == 1)
+	// if (c == 2 && d == 1)
+	// {
+	// 	auto [new_p2, add_cost] = movePointerLeft(params, is_selec, last_edge_type_2, 1, 2);
+
+	// 	return std::make_tuple(new_rc + add_cost, new_p2);
+	// }
+	// if (d == 2 && c == 1)
+	// {
+	// 	auto [new_p2, add_cost] = movePointerRight(params, is_selec, last_edge_type_2, 1, 2);
+
+	// 	return std::make_tuple(new_rc + add_cost, new_p2);
+	// }
+	// if (d == 3 && c == 2)
+	// {
+	// 	auto [new_p2, add_cost] = movePointerRight(params, is_selec, last_edge_type_2, 1, 2);
+
+	// 	return std::make_tuple(new_rc + add_cost, new_p2);
+	// }
+	// 	if (d == 2 && c == 3)
+	// {
+	// 	auto [new_p2, add_cost] = movePointerLeft(params, is_selec, last_edge_type_2, 1, 2);
+
+	// 	return std::make_tuple(new_rc + add_cost, new_p2);
+	// }
+	if (d > c)
+
 	{
-		auto [new_p2, add_cost] = movePointerLeft(params, is_selec, last_edge_type_2, 1, 2);
+		auto [new_p2, add_cost] = movePointerRight(params, is_selec, last_edge_type_2, d - c, 2);
 
 		return std::make_tuple(new_rc + add_cost, new_p2);
 	}
-	if (d == 2 && c == 1)
+	if (c > d)
 	{
-		auto [new_p2, add_cost] = movePointerRight(params, is_selec, last_edge_type_2, 1, 2);
-
-		return std::make_tuple(new_rc + add_cost, new_p2);
-	}
-	if (d == 3 && c == 2)
-	{
-		auto [new_p2, add_cost] = movePointerRight(params, is_selec, last_edge_type_2, 1, 2);
-
-		return std::make_tuple(new_rc + add_cost, new_p2);
-	}
-		if (d == 2 && c == 3)
-	{
-		auto [new_p2, add_cost] = movePointerLeft(params, is_selec, last_edge_type_2, 1, 2);
+		auto [new_p2, add_cost] = movePointerLeft(params, is_selec, last_edge_type_2, c - d, 2);
 
 		return std::make_tuple(new_rc + add_cost, new_p2);
 	}
 
 	else
 	{
-		//std::cout << c << " " << d << std::endl;
+		// std::cout << c << " " << d << std::endl;
 		return computeRobustCost2(params, is_selec);
 	}
 }
