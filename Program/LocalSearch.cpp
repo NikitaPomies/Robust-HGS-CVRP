@@ -45,8 +45,8 @@ void LocalSearch::run(Individual &indiv, double penaltyCapacityLS, double penalt
 						continue; // SWAP
 					// // if (nodeUIndex <= nodeVIndex && move6())
 					// 	continue; // SWAP
-					// if (intraRouteMove && move7())
-					// 	continue; // 2-OPT
+					if (intraRouteMove && move7(indiv))
+						continue; // 2-OPT
 					// if (!intraRouteMove && move8())
 					// 	continue; // 2-OPT*
 					// if (!intraRouteMove && move9())
@@ -71,21 +71,21 @@ void LocalSearch::run(Individual &indiv, double penaltyCapacityLS, double penalt
 				}
 			}
 
-			// /* MOVES INVOLVING AN EMPTY ROUTE -- NOT TESTED IN THE FIRST LOOP TO AVOID INCREASING TOO MUCH THE FLEET SIZE */
-			// if (loopID > 0 && !emptyRoutes.empty())
-			// {
-			// 	nodeV = routes[*emptyRoutes.begin()].depot;
-			// 	setLocalVariablesRouteU();
-			// 	setLocalVariablesRouteV();
-			// 	if (move1(indiv))
-			// 		continue; // RELOCATE
-			// 	if (move2(indiv))
-			// 		continue; // RELOCATE
-			// 	if (move3(indiv))
-			// 		continue; // RELOCATE
-			// 	if (move9())
-			// 		continue; // 2-OPT*
-			// }
+			/* MOVES INVOLVING AN EMPTY ROUTE -- NOT TESTED IN THE FIRST LOOP TO AVOID INCREASING TOO MUCH THE FLEET SIZE */
+			if (loopID > 0 && !emptyRoutes.empty())
+			{
+				nodeV = routes[*emptyRoutes.begin()].depot;
+				setLocalVariablesRouteU();
+				setLocalVariablesRouteV();
+				if (move1(indiv))
+					continue; // RELOCATE
+				if (move2(indiv))
+					continue; // RELOCATE
+							  // if (move3(indiv))
+							  // 	continue; // RELOCATE
+							  // if (move9())
+							  // 	continue; // 2-OPT*
+			}
 		}
 
 		if (params.ap.useSwapStar == 1 && params.areCoordinatesProvided)
@@ -145,7 +145,7 @@ void updateisSelectedEdges(std::vector<std::vector<int>> &is_selected, std::vect
 
 	for (const auto &[i, j] : to_delete)
 	{
-		if (is_selected[i][j] == 0)
+		if (is_selected[i][j] == 0 && (i + j != 0))
 		{
 			std::cout << "pb delete" << std::endl;
 		}
@@ -580,6 +580,22 @@ bool LocalSearch::move7(Individual &indiv)
 		{nodeXIndex, nodeYIndex},
 	};
 
+	
+
+	Node *current = nodeX;
+	while (current->cour != nodeV->cour)
+	{
+		Node *neighbour = current->next;
+		// is_selec[current->cour][neighbour->cour] = 0;
+		// is_selec[neighbour->cour][current->cour] = 1;
+		edges_to_delete.push_back({current->cour, neighbour->cour});
+		edges_to_add.push_back({
+			neighbour->cour,
+			current->cour,
+		});
+		current = neighbour;
+	}
+
 	updateisSelectedEdges(is_selec, edges_to_delete, edges_to_add);
 
 	auto [new_rc1, p1] = indiv.updateRobustCost1(params, is_selec, edges_to_delete, edges_to_add);
@@ -590,7 +606,16 @@ bool LocalSearch::move7(Individual &indiv)
 	double rcostSupp = new_rc - indiv.eval.robust_cost;
 
 	if (cost + rcostSupp > -MY_EPSILON)
+	{
+
 		return false;
+	}
+
+	indiv.eval.robust_cost = new_rc;
+	indiv.eval.robust_cost_1 = new_rc1;
+	indiv.eval.robust_cost_2 = new_rc2;
+	indiv.last_edge_type_1 = p1;
+	indiv.last_edge_type_2 = p2;
 
 	Node *nodeNum = nodeX->next;
 	nodeX->prev = nodeNum;
