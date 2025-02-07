@@ -20,8 +20,8 @@ struct AlgorithmParameters default_algorithm_parameters() {
 	ap.penaltyDecrease = 0.85;
 	ap.penaltyIncrease = 1.2;
 
-	ap.seed = 0;
-	ap.nbIter = 20000;
+	ap.seed = 1;
+	ap.nbIter = 6000;
 	ap.nbIterTraces = 100;
 	ap.timeLimit = 0;
 	ap.useSwapStar = 1;
