@@ -1,7 +1,7 @@
 
 # Robust-HGS-CVRP: An adaptation of HGS-CVRP to solve a robust routing problem
 
-This code is an adaptation of Thibault Vidal's work to solve a modified version of a CVRP for a school project.
+This code is an adaptation of [Thibault Vidal's work](https://github.com/vidalt/HGS-CVRP) to solve a modified version of a CVRP for a school project.
 
 If using MTZ constraints, our robust cvrp can be formulated as follow : 
 
@@ -18,12 +18,15 @@ If using MTZ constraints, our robust cvrp can be formulated as follow :
 & \delta_{ij}^1 \in [0,1], \delta_{ij}^2 \in [0,2] & \forall (i,j) \in A 
 \end{align*}
 ```
+<br>
+
+
 Exact methods( Dualisation, Cutting Planes, etc.) were tested to solve this problem and can be found at https://github.com/NikitaPomies/RobustCVRP.
 
 ## Modification
 The main made changes are in the LocalSearch and Individual class. Each move must now take into account the robust cost instead of the static one. In the original code, computing the incremental ccost of move is in O(1), which is not the case now for our robust problem. We designed an algorithm to compute the incremental robust cost that still had correct time performances overall.
 
-The fitness was also modified to take into account the robust cost
+The fitness was also modified to take into account the robust cost.
 
 
 
