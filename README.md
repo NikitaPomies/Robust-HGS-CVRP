@@ -21,7 +21,7 @@ If using MTZ constraints, our robust cvrp can be formulated as follow :
 Exact methods( Dualisation, Cutting Planes, etc.) were tested to solve this problem and can be found at https://github.com/NikitaPomies/RobustCVRP.
 
 ## Modification
-The main made changes are in the LocalSearch class. Each move must now take into account the robust cost instead of the static one. In the original code, computing the incremental ccost of move is in O(1), which is not the case now for our robust problem. We designed an algorithm to compute the incremental robust cost that still had correct time performances overall.
+The main made changes are in the LocalSearch and Individual class. Each move must now take into account the robust cost instead of the static one. In the original code, computing the incremental ccost of move is in O(1), which is not the case now for our robust problem. We designed an algorithm to compute the incremental robust cost that still had correct time performances overall.
 
 The fitness was also modified to take into account the robust cost
 
