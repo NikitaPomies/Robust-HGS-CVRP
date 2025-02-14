@@ -587,11 +587,11 @@ bool LocalSearch::move7(Individual &indiv)
 		edges_to_delete.push_back({current->cour, neighbour->cour});
 		if (params.sor1_index[current->cour][neighbour->cour] == p1)
 		{
-			p1 == params.sor1_index[neighbour->cour][current->cour];
+			p1 = params.sor1_index[neighbour->cour][current->cour];
 		}
 		if (params.sor2_index[current->cour][neighbour->cour] == p2)
 		{
-			p2 == params.sor2_index[neighbour->cour][current->cour];
+			p2 = params.sor2_index[neighbour->cour][current->cour];
 		}
 		edges_to_add.push_back({
 			neighbour->cour,
@@ -599,6 +599,8 @@ bool LocalSearch::move7(Individual &indiv)
 		});
 		current = neighbour;
 	}
+
+
 	indiv.eval.robust_cost = new_rc;
 	indiv.eval.robust_cost_1 = new_rc1;
 	indiv.eval.robust_cost_2 = new_rc2;
@@ -626,6 +628,15 @@ bool LocalSearch::move7(Individual &indiv)
 	searchCompleted = false;
 	updateRouteData(routeU);
 	updateisSelectedEdges(indiv.is_selected, edges_to_delete, edges_to_add);
+	// auto [new_rc2test, p2test] = indiv.computeRobustCost2(params, indiv.is_selected);
+	// auto [new_rc1test, p1test] = indiv.computeRobustCost1(params, indiv.is_selected);
+	// if (p1test != p1) {
+	// 	std::cout<<"pb"<<std::endl;
+	// }
+	// if (p2test != p2) {
+	// 	std::cout<<"pb"<<std::endl;
+	// }
+
 	return true;
 }
 
