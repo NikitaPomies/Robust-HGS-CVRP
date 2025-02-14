@@ -47,8 +47,8 @@ void LocalSearch::run(Individual &indiv, double penaltyCapacityLS, double penalt
 					// 	continue; // SWAP
 					if (intraRouteMove && move7(indiv))
 						continue; // 2-OPT
-					// if (!intraRouteMove && move8())
-					// 	continue; // 2-OPT*
+					if (!intraRouteMove && move8(indiv))
+						continue; // 2-OPT*
 					// if (!intraRouteMove && move9())
 					// 	continue; // 2-OPT*
 
@@ -700,17 +700,57 @@ bool LocalSearch::move7(Individual &indiv)
 	return true;
 }
 
-bool LocalSearch::move8()
+bool LocalSearch::move8(Individual &indiv)
 {
 	double cost = params.timeCost[nodeUIndex][nodeVIndex] + params.timeCost[nodeXIndex][nodeYIndex] - params.timeCost[nodeUIndex][nodeXIndex] - params.timeCost[nodeVIndex][nodeYIndex] + nodeV->cumulatedReversalDistance + routeU->reversalDistance - nodeX->cumulatedReversalDistance - routeU->penalty - routeV->penalty;
+	std::vector<std::vector<int>> is_selec = indiv.is_selected;
 
+	std::vector<std::pair<int, int>> edges_to_delete = {
+		{nodeUIndex, nodeXIndex},
+		{nodeVIndex, nodeYIndex}};
+
+	std::vector<std::pair<int, int>> edges_to_add = {
+		{nodeUIndex, nodeVIndex},
+		{nodeXIndex, nodeYIndex},
+	};
+
+	Node *current = nodeX;
+	while (current->cour != 0)
+	{
+		Node *neighbour = current->next;
+
+		edges_to_delete.push_back({current->cour, neighbour->cour});
+		edges_to_add.push_back({
+			neighbour->cour,
+			current->cour,
+		});
+		current = neighbour;
+	}
+	current = nodeV;
+	while (current->cour != 0)
+	{
+		Node *neighbour = current->prev;
+
+		edges_to_delete.push_back({neighbour->cour, current->cour});
+		edges_to_add.push_back({current->cour, neighbour->cour});
+		current = neighbour;
+	}
+
+	updateisSelectedEdges(is_selec, edges_to_delete, edges_to_add);
+
+	auto [new_rc1, p1] = indiv.updateRobustCost1(params, is_selec, edges_to_delete, edges_to_add);
+	// auto [new_rc2, p2] = indiv.computeRobustCost2(params, is_selec);
+	auto [new_rc2, p2] = indiv.updateRobustCost2(params, is_selec, edges_to_delete, edges_to_add);
+
+	double new_rc = new_rc1 + new_rc2;
+	double rcostSupp = new_rc - indiv.eval.robust_cost;
 	// Early move pruning to save CPU time. Guarantees that this move cannot improve without checking additional (load, duration...) constraints
-	if (cost >= 0)
+	if (cost + rcostSupp >= 0)
 		return false;
 
 	cost += penaltyExcessDuration(nodeU->cumulatedTime + nodeV->cumulatedTime + nodeV->cumulatedReversalDistance + params.timeCost[nodeUIndex][nodeVIndex]) + penaltyExcessDuration(routeU->duration - nodeU->cumulatedTime - params.timeCost[nodeUIndex][nodeXIndex] + routeU->reversalDistance - nodeX->cumulatedReversalDistance + routeV->duration - nodeV->cumulatedTime - params.timeCost[nodeVIndex][nodeYIndex] + params.timeCost[nodeXIndex][nodeYIndex]) + penaltyExcessLoad(nodeU->cumulatedLoad + nodeV->cumulatedLoad) + penaltyExcessLoad(routeU->load + routeV->load - nodeU->cumulatedLoad - nodeV->cumulatedLoad);
 
-	if (cost > -MY_EPSILON)
+	if (cost + rcostSupp > -MY_EPSILON)
 		return false;
 
 	Node *depotU = routeU->depot;
@@ -770,10 +810,18 @@ bool LocalSearch::move8()
 		depotUFin->prev->next = depotUFin;
 	}
 
+	indiv.eval.robust_cost = new_rc;
+	indiv.eval.robust_cost_1 = new_rc1;
+	indiv.eval.robust_cost_2 = new_rc2;
+	indiv.last_edge_type_1 = p1;
+	indiv.last_edge_type_2 = p2;
+
 	nbMoves++; // Increment move counter before updating route data
 	searchCompleted = false;
 	updateRouteData(routeU);
 	updateRouteData(routeV);
+	updateisSelectedEdges(indiv.is_selected, edges_to_delete, edges_to_add);
+
 	return true;
 }
 

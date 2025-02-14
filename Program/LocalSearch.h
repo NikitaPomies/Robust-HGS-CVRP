@@ -171,7 +171,7 @@ private:
 
 	/* 2-OPT and 2-OPT* MOVES */
 	bool move7(Individual &indiv); // If route(U) == route(V), replace (U,X) and (V,Y) by (U,V) and (X,Y)
-	bool move8();				   // If route(U) != route(V), replace (U,X) and (V,Y) by (U,V) and (X,Y)
+	bool move8(Individual &indiv);				   // If route(U) != route(V), replace (U,X) and (V,Y) by (U,V) and (X,Y)
 	bool move9();				   // If route(U) != route(V), replace (U,X) and (V,Y) by (U,Y) and (V,X)
 
 	/* SUB-ROUTINES FOR EFFICIENT SWAP* EVALUATIONS */
