@@ -140,6 +140,47 @@ void LocalSearch::setLocalVariablesRouteV()
 	intraRouteMove = (routeU == routeV);
 }
 
+void updateisSelectedDeletion(std::vector<std::vector<int>> &is_selected, std::pair<int, int> to_delete)
+{
+	int i = std::get<0>(to_delete);
+	int j = std::get<1>(to_delete);
+	if (is_selected[i][j] == 0 && (i + j != 0))
+	{
+		std::cout << "pb delete" << std::endl;
+	}
+	if (i == j && i == 0)
+	{
+		is_selected[i][j] = 0;
+	}
+	else
+
+		is_selected[i][j] -= 1;
+
+	if (is_selected[i][j] < 0)
+	{
+		std::cout << "pb" << std::endl;
+		std::cout << i << " " << j << std::endl;
+	}
+}
+
+void updateisSelectedAddition(std::vector<std::vector<int>> &is_selected, std::pair<int, int> to_delete)
+{
+	int i = std::get<0>(to_delete);
+	int j = std::get<1>(to_delete);
+	if (i == j && i == 0)
+	{
+		is_selected[i][j] = 0;
+	}
+	else
+		is_selected[i][j] += 1;
+
+	if (is_selected[i][j] > 1)
+	{
+		std::cout << "pb" << std::endl;
+		std::cout << i << " " << j << std::endl;
+	}
+}
+
 void updateisSelectedEdges(std::vector<std::vector<int>> &is_selected, std::vector<std::pair<int, int>> &to_delete, std::vector<std::pair<int, int>> &to_add)
 {
 
@@ -584,7 +625,9 @@ bool LocalSearch::move7(Individual &indiv)
 		Node *neighbour = current->next;
 		// is_selec[current->cour][neighbour->cour] = 0;
 		// is_selec[neighbour->cour][current->cour] = 1;
-		edges_to_delete.push_back({current->cour, neighbour->cour});
+		// edges_to_delete.push_back({current->cour, neighbour->cour});
+		updateisSelectedDeletion(indiv.is_selected, {current->cour, neighbour->cour});
+		updateisSelectedAddition(indiv.is_selected, {neighbour->cour, current->cour});
 		if (params.sor1_index[current->cour][neighbour->cour] == p1)
 		{
 			p1 = params.sor1_index[neighbour->cour][current->cour];
@@ -593,13 +636,12 @@ bool LocalSearch::move7(Individual &indiv)
 		{
 			p2 = params.sor2_index[neighbour->cour][current->cour];
 		}
-		edges_to_add.push_back({
-			neighbour->cour,
-			current->cour,
-		});
+		// edges_to_add.push_back({
+		// 	neighbour->cour,
+		// 	current->cour,
+		// });
 		current = neighbour;
 	}
-
 
 	indiv.eval.robust_cost = new_rc;
 	indiv.eval.robust_cost_1 = new_rc1;
