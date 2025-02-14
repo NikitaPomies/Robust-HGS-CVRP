@@ -47,8 +47,8 @@ void LocalSearch::run(Individual &indiv, double penaltyCapacityLS, double penalt
 					// 	continue; // SWAP
 					if (intraRouteMove && move7(indiv))
 						continue; // 2-OPT
-					if (!intraRouteMove && move8(indiv))
-						continue; // 2-OPT*
+					// if (!intraRouteMove && move8(indiv))
+					// 	continue; // 2-OPT*
 					// if (!intraRouteMove && move9())
 					// 	continue; // 2-OPT*
 
@@ -556,7 +556,7 @@ bool LocalSearch::move5(Individual &indiv)
 	if (!intraRouteMove)
 		updateRouteData(routeV);
 
-	//updateisSelectedEdges(indiv.is_selected, edges_to_delete, edges_to_add);
+	// updateisSelectedEdges(indiv.is_selected, edges_to_delete, edges_to_add);
 
 	indiv.eval.robust_cost = new_rc;
 	indiv.eval.robust_cost_1 = new_rc1;
@@ -611,7 +611,7 @@ bool LocalSearch::move7(Individual &indiv)
 
 	// TODO : Reversal distance should be handled for asymmetric instances. is_selec should be reversed too
 
-	std::vector<std::vector<int>> is_selec = indiv.is_selected;
+	// std::vector<std::vector<int>> is_selec = indiv.is_selected;
 
 	std::vector<std::pair<int, int>> edges_to_delete = {
 		{nodeUIndex, nodeXIndex},
@@ -622,17 +622,18 @@ bool LocalSearch::move7(Individual &indiv)
 		{nodeXIndex, nodeYIndex},
 	};
 
-	updateisSelectedEdges(is_selec, edges_to_delete, edges_to_add);
+	updateisSelectedEdges(indiv.is_selected, edges_to_delete, edges_to_add);
 
-	auto [new_rc1, p1] = indiv.updateRobustCost1(params, is_selec, edges_to_delete, edges_to_add);
-	// auto [new_rc2, p2] = indiv.computeRobustCost2(params, is_selec);
-	auto [new_rc2, p2] = indiv.updateRobustCost2(params, is_selec, edges_to_delete, edges_to_add);
+	auto [new_rc1, p1] = indiv.updateRobustCost1(params, indiv.is_selected, edges_to_delete, edges_to_add);
+	// auto [new_rc2, p2] = indiv.computeRobustCost2(params, indiv.is_selected);
+	auto [new_rc2, p2] = indiv.updateRobustCost2(params, indiv.is_selected, edges_to_delete, edges_to_add);
 
 	double new_rc = new_rc1 + new_rc2;
 	double rcostSupp = new_rc - indiv.eval.robust_cost;
 
 	if (cost + rcostSupp > -MY_EPSILON)
 	{
+		updateisSelectedEdges(indiv.is_selected, edges_to_add, edges_to_delete);
 
 		return false;
 	}
@@ -687,15 +688,15 @@ bool LocalSearch::move7(Individual &indiv)
 	nbMoves++; // Increment move counter before updating route data
 	searchCompleted = false;
 	updateRouteData(routeU);
-	updateisSelectedEdges(indiv.is_selected, edges_to_delete, edges_to_add);
-	// auto [new_rc2test, p2test] = indiv.computeRobustCost2(params, indiv.is_selected);
-	// auto [new_rc1test, p1test] = indiv.computeRobustCost1(params, indiv.is_selected);
-	// if (p1test != p1) {
-	// 	std::cout<<"pb"<<std::endl;
-	// }
-	// if (p2test != p2) {
-	// 	std::cout<<"pb"<<std::endl;
-	// }
+	// updateisSelectedEdges(indiv.is_selected, edges_to_delete, edges_to_add);
+	//  auto [new_rc2test, p2test] = indiv.computeRobustCost2(params, indiv.is_selected);
+	//  auto [new_rc1test, p1test] = indiv.computeRobustCost1(params, indiv.is_selected);
+	//  if (p1test != p1) {
+	//  	std::cout<<"pb"<<std::endl;
+	//  }
+	//  if (p2test != p2) {
+	//  	std::cout<<"pb"<<std::endl;
+	//  }
 
 	return true;
 }
@@ -703,7 +704,7 @@ bool LocalSearch::move7(Individual &indiv)
 bool LocalSearch::move8(Individual &indiv)
 {
 	double cost = params.timeCost[nodeUIndex][nodeVIndex] + params.timeCost[nodeXIndex][nodeYIndex] - params.timeCost[nodeUIndex][nodeXIndex] - params.timeCost[nodeVIndex][nodeYIndex] + nodeV->cumulatedReversalDistance + routeU->reversalDistance - nodeX->cumulatedReversalDistance - routeU->penalty - routeV->penalty;
-	std::vector<std::vector<int>> is_selec = indiv.is_selected;
+	// std::vector<std::vector<int>> is_selec = indiv.is_selected;
 
 	std::vector<std::pair<int, int>> edges_to_delete = {
 		{nodeUIndex, nodeXIndex},
@@ -714,16 +715,44 @@ bool LocalSearch::move8(Individual &indiv)
 		{nodeXIndex, nodeYIndex},
 	};
 
+	updateisSelectedEdges(indiv.is_selected, edges_to_delete, edges_to_add);
+
+	auto [new_rc1, p1] = indiv.updateRobustCost1(params, indiv.is_selected, edges_to_delete, edges_to_add);
+	// auto [new_rc2, p2] = indiv.computeRobustCost2(params, indiv.is_selected);
+	auto [new_rc2, p2] = indiv.updateRobustCost2(params, indiv.is_selected, edges_to_delete, edges_to_add);
+
+	double new_rc = new_rc1 + new_rc2;
+	double rcostSupp = new_rc - indiv.eval.robust_cost;
+	// Early move pruning to save CPU time. Guarantees that this move cannot improve without checking additional (load, duration...) constraints
+	if (cost + rcostSupp >= 0)
+	{
+		updateisSelectedEdges(indiv.is_selected, edges_to_add, edges_to_delete);
+
+		return false;
+	}
+	cost += penaltyExcessDuration(nodeU->cumulatedTime + nodeV->cumulatedTime + nodeV->cumulatedReversalDistance + params.timeCost[nodeUIndex][nodeVIndex]) + penaltyExcessDuration(routeU->duration - nodeU->cumulatedTime - params.timeCost[nodeUIndex][nodeXIndex] + routeU->reversalDistance - nodeX->cumulatedReversalDistance + routeV->duration - nodeV->cumulatedTime - params.timeCost[nodeVIndex][nodeYIndex] + params.timeCost[nodeXIndex][nodeYIndex]) + penaltyExcessLoad(nodeU->cumulatedLoad + nodeV->cumulatedLoad) + penaltyExcessLoad(routeU->load + routeV->load - nodeU->cumulatedLoad - nodeV->cumulatedLoad);
+
+	if (cost + rcostSupp > -MY_EPSILON)
+	{
+		updateisSelectedEdges(indiv.is_selected, edges_to_add, edges_to_delete);
+
+		return false;
+	}
+
 	Node *current = nodeX;
 	while (current->cour != 0)
 	{
 		Node *neighbour = current->next;
-
-		edges_to_delete.push_back({current->cour, neighbour->cour});
-		edges_to_add.push_back({
-			neighbour->cour,
-			current->cour,
-		});
+		updateisSelectedDeletion(indiv.is_selected, {current->cour, neighbour->cour});
+		updateisSelectedAddition(indiv.is_selected, {neighbour->cour, current->cour});
+		if (params.sor1_index[current->cour][neighbour->cour] == p1)
+		{
+			p1 = params.sor1_index[neighbour->cour][current->cour];
+		}
+		if (params.sor2_index[current->cour][neighbour->cour] == p2)
+		{
+			p2 = params.sor2_index[neighbour->cour][current->cour];
+		}
 		current = neighbour;
 	}
 	current = nodeV;
@@ -731,27 +760,21 @@ bool LocalSearch::move8(Individual &indiv)
 	{
 		Node *neighbour = current->prev;
 
-		edges_to_delete.push_back({neighbour->cour, current->cour});
-		edges_to_add.push_back({current->cour, neighbour->cour});
+		updateisSelectedAddition(indiv.is_selected, {current->cour, neighbour->cour});
+		updateisSelectedDeletion(indiv.is_selected, {neighbour->cour, current->cour});
+		if (params.sor1_index[current->cour][neighbour->cour] == p1)
+		{
+			p1 = params.sor1_index[neighbour->cour][current->cour];
+		}
+		if (params.sor2_index[current->cour][neighbour->cour] == p2)
+		{
+			p2 = params.sor2_index[neighbour->cour][current->cour];
+		}
+
+		// edges_to_delete.push_back({neighbour->cour, current->cour});
+		// edges_to_add.push_back({current->cour, neighbour->cour});
 		current = neighbour;
 	}
-
-	updateisSelectedEdges(is_selec, edges_to_delete, edges_to_add);
-
-	auto [new_rc1, p1] = indiv.updateRobustCost1(params, is_selec, edges_to_delete, edges_to_add);
-	// auto [new_rc2, p2] = indiv.computeRobustCost2(params, is_selec);
-	auto [new_rc2, p2] = indiv.updateRobustCost2(params, is_selec, edges_to_delete, edges_to_add);
-
-	double new_rc = new_rc1 + new_rc2;
-	double rcostSupp = new_rc - indiv.eval.robust_cost;
-	// Early move pruning to save CPU time. Guarantees that this move cannot improve without checking additional (load, duration...) constraints
-	if (cost + rcostSupp >= 0)
-		return false;
-
-	cost += penaltyExcessDuration(nodeU->cumulatedTime + nodeV->cumulatedTime + nodeV->cumulatedReversalDistance + params.timeCost[nodeUIndex][nodeVIndex]) + penaltyExcessDuration(routeU->duration - nodeU->cumulatedTime - params.timeCost[nodeUIndex][nodeXIndex] + routeU->reversalDistance - nodeX->cumulatedReversalDistance + routeV->duration - nodeV->cumulatedTime - params.timeCost[nodeVIndex][nodeYIndex] + params.timeCost[nodeXIndex][nodeYIndex]) + penaltyExcessLoad(nodeU->cumulatedLoad + nodeV->cumulatedLoad) + penaltyExcessLoad(routeU->load + routeV->load - nodeU->cumulatedLoad - nodeV->cumulatedLoad);
-
-	if (cost + rcostSupp > -MY_EPSILON)
-		return false;
 
 	Node *depotU = routeU->depot;
 	Node *depotV = routeV->depot;
@@ -820,7 +843,7 @@ bool LocalSearch::move8(Individual &indiv)
 	searchCompleted = false;
 	updateRouteData(routeU);
 	updateRouteData(routeV);
-	updateisSelectedEdges(indiv.is_selected, edges_to_delete, edges_to_add);
+	// updateisSelectedEdges(indiv.is_selected, edges_to_delete, edges_to_add);
 
 	return true;
 }
