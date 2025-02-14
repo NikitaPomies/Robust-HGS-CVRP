@@ -61,8 +61,8 @@ void LocalSearch::run(Individual &indiv, double penaltyCapacityLS, double penalt
 							continue; // RELOCATE
 						if (move2(indiv))
 							continue; // RELOCATE
-						// if (move3(indiv))
-						// 	continue; // RELOCATE
+									  // if (move3(indiv))
+									  // 	continue; // RELOCATE
 									  // 	if (!intraRouteMove && move8())
 									  // 		continue; // 2-OPT*
 									  // 	if (!intraRouteMove && move9())
@@ -81,8 +81,8 @@ void LocalSearch::run(Individual &indiv, double penaltyCapacityLS, double penalt
 					continue; // RELOCATE
 				if (move2(indiv))
 					continue; // RELOCATE
-				// if (move3(indiv))
-				// 	continue; // RELOCATE
+							  // if (move3(indiv))
+							  // 	continue; // RELOCATE
 							  // if (move9())
 							  // 	continue; // 2-OPT*
 			}
@@ -563,20 +563,6 @@ bool LocalSearch::move7(Individual &indiv)
 		{nodeXIndex, nodeYIndex},
 	};
 
-	Node *current = nodeX;
-	while (current->cour != nodeV->cour)
-	{
-		Node *neighbour = current->next;
-		// is_selec[current->cour][neighbour->cour] = 0;
-		// is_selec[neighbour->cour][current->cour] = 1;
-		edges_to_delete.push_back({current->cour, neighbour->cour});
-		edges_to_add.push_back({
-			neighbour->cour,
-			current->cour,
-		});
-		current = neighbour;
-	}
-
 	updateisSelectedEdges(is_selec, edges_to_delete, edges_to_add);
 
 	auto [new_rc1, p1] = indiv.updateRobustCost1(params, is_selec, edges_to_delete, edges_to_add);
@@ -592,6 +578,27 @@ bool LocalSearch::move7(Individual &indiv)
 		return false;
 	}
 
+	Node *current = nodeX;
+	while (current->cour != nodeV->cour)
+	{
+		Node *neighbour = current->next;
+		// is_selec[current->cour][neighbour->cour] = 0;
+		// is_selec[neighbour->cour][current->cour] = 1;
+		edges_to_delete.push_back({current->cour, neighbour->cour});
+		if (params.sor1_index[current->cour][neighbour->cour] == p1)
+		{
+			p1 == params.sor1_index[neighbour->cour][current->cour];
+		}
+		if (params.sor2_index[current->cour][neighbour->cour] == p2)
+		{
+			p2 == params.sor2_index[neighbour->cour][current->cour];
+		}
+		edges_to_add.push_back({
+			neighbour->cour,
+			current->cour,
+		});
+		current = neighbour;
+	}
 	indiv.eval.robust_cost = new_rc;
 	indiv.eval.robust_cost_1 = new_rc1;
 	indiv.eval.robust_cost_2 = new_rc2;

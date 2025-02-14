@@ -135,16 +135,20 @@ Params::Params(
 			}
 		}
 	}
+	auto comparator = [](const auto &a, const auto &b)
+	{
+		if (std::get<2>(a) != std::get<2>(b))
+		{
+			return std::get<2>(a) > std::get<2>(b); // Sort by f(i, j)
+		}
+		return std::make_pair(std::min(std::get<0>(a), std::get<1>(a)),
+							  std::max(std::get<0>(a), std::get<1>(a))) <
+			   std::make_pair(std::min(std::get<0>(b), std::get<1>(b)),
+							  std::max(std::get<0>(b), std::get<1>(b)));
+	};
 
-	std::sort(sor1.begin(), sor1.end(), [](const auto &a, const auto &b)
-			  {
-				  return std::get<2>(a) > std::get<2>(b); // Compare by the weight (3rd element)
-			  });
-	std::sort(sor2.begin(), sor2.end(), [](const auto &a, const auto &b)
-			  {
-				  return std::get<2>(a) > std::get<2>(b); // Compare by the weight (3rd element)
-			  });
-
+	std::sort(sor1.begin(), sor1.end(), comparator);
+	std::sort(sor2.begin(), sor2.end(), comparator);
 	sor1_index.resize(nbClients + 1, std::vector<int>(nbClients + 1, 0));
 	sor2_index.resize(nbClients + 1, std::vector<int>(nbClients + 1, 0));
 
