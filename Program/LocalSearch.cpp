@@ -47,8 +47,8 @@ void LocalSearch::run(Individual &indiv, double penaltyCapacityLS, double penalt
 					// 	continue; // SWAP
 					if (intraRouteMove && move7(indiv))
 						continue; // 2-OPT
-					// if (!intraRouteMove && move8(indiv))
-					// 	continue; // 2-OPT*
+					if (!intraRouteMove && move8(indiv))
+						continue; // 2-OPT*
 					// if (!intraRouteMove && move9())
 					// 	continue; // 2-OPT*
 
@@ -710,10 +710,11 @@ bool LocalSearch::move8(Individual &indiv)
 		{nodeUIndex, nodeXIndex},
 		{nodeVIndex, nodeYIndex}};
 
-	std::vector<std::pair<int, int>> edges_to_add = {
-		{nodeUIndex, nodeVIndex},
-		{nodeXIndex, nodeYIndex},
-	};
+	std::vector<std::pair<int, int>> edges_to_add = {};
+	if (indiv.is_selected[nodeUIndex][nodeVIndex]==0)
+		edges_to_add.push_back({nodeUIndex, nodeVIndex});
+	if (indiv.is_selected[nodeXIndex][nodeYIndex]==0)
+		edges_to_add.push_back({nodeXIndex, nodeYIndex});
 
 	updateisSelectedEdges(indiv.is_selected, edges_to_delete, edges_to_add);
 
