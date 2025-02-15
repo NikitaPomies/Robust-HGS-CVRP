@@ -167,11 +167,11 @@ private:
 	/* SWAP MOVES */
 	bool move4(Individual &indiv); // If U and V are client nodes, swap U and V
 	bool move5(Individual &indiv); // If U, X and V are client nodes, swap (U,X) and V
-	bool move6();				   // If (U,X) and (V,Y) are client nodes, swap (U,X) and (V,Y)
+	bool move6(Individual &indiv); // If (U,X) and (V,Y) are client nodes, swap (U,X) and (V,Y)
 
 	/* 2-OPT and 2-OPT* MOVES */
 	bool move7(Individual &indiv); // If route(U) == route(V), replace (U,X) and (V,Y) by (U,V) and (X,Y)
-	bool move8(Individual &indiv);				   // If route(U) != route(V), replace (U,X) and (V,Y) by (U,V) and (X,Y)
+	bool move8(Individual &indiv); // If route(U) != route(V), replace (U,X) and (V,Y) by (U,V) and (X,Y)
 	bool move9();				   // If route(U) != route(V), replace (U,X) and (V,Y) by (U,Y) and (V,X)
 
 	/* SUB-ROUTINES FOR EFFICIENT SWAP* EVALUATIONS */
