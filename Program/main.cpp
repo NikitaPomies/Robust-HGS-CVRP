@@ -11,7 +11,7 @@ int main(int argc, char *argv[])
 	try
 	{
 		// // Reading the arguments of the program
-		//CommandLine commandline(argc, argv);
+		// CommandLine commandline(argc, argv);
 		AlgorithmParameters ap = default_algorithm_parameters();
 		ap.nbIter = 3000;
 
@@ -22,26 +22,27 @@ int main(int argc, char *argv[])
 		// // Reading the data file and initializing some data structures
 		// if (commandline.verbose)
 		// 	std::cout << "----- READING INSTANCE: " << commandline.pathInstance << std::endl;
-		//InstanceCVRPLIB cvrp1(commandline.pathInstance, commandline.isRoundingInteger);
+		// InstanceCVRPLIB cvrp1(commandline.pathInstance, commandline.isRoundingInteger);
 		//
-		string path = string("/home/bvdka/HGS-CVRP/Instances/n_80-euclidean_true");
-		InstanceZA cvrp(path,1);
+		string name = string("n_40-euclidean_false");
+		string path = string("/home/bvdka/HGS-CVRP/Instances/" + name);
+		InstanceZA cvrp(path, 1);
 
-			Params params(cvrp.x_coords,cvrp.y_coords,cvrp.dist_mtx,cvrp.service_time,cvrp.demands,
-				          cvrp.vehicleCapacity,cvrp.durationLimit,20,cvrp.isDurationConstraint,1,ap,cvrp.th,cvrp.T);
+		Params params(cvrp.x_coords, cvrp.y_coords, cvrp.dist_mtx, cvrp.service_time, cvrp.demands,
+					  cvrp.vehicleCapacity, cvrp.durationLimit, INT_MAX, cvrp.isDurationConstraint, 1, ap, cvrp.th, cvrp.T);
 
-			// Running HGS
-			Genetic solver(params);
-			solver.run();
+		// Running HGS
+		Genetic solver(params);
+		solver.run();
 
-			// // Exporting the best solution
-			// if (solver.population.getBestFound() != NULL)
-			// {
-			// 	if (params.verbose) std::cout << "----- WRITING BEST SOLUTION IN : " << commandline.pathSolution << std::endl;
-			// 	solver.population.exportCVRPLibFormat(*solver.population.getBestFound(),commandline.pathSolution);
-			// 	solver.population.exportSearchProgress(commandline.pathSolution + ".PG.csv", commandline.pathInstance);
-			// }
-			solver.population.exportCVRPLibFormat(*solver.population.getBestFound(),"./output");
+		// // Exporting the best solution
+		// if (solver.population.getBestFound() != NULL)
+		// {
+		// 	if (params.verbose) std::cout << "----- WRITING BEST SOLUTION IN : " << commandline.pathSolution << std::endl;
+		// 	solver.population.exportCVRPLibFormat(*solver.population.getBestFound(),commandline.pathSolution);
+		// 	solver.population.exportSearchProgress(commandline.pathSolution + ".PG.csv", commandline.pathInstance);
+		// }
+		solver.population.exportCVRPLibFormat(*solver.population.getBestFound(), "./output" + name);
 	}
 
 	catch (const string &e)
