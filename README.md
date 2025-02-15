@@ -28,7 +28,7 @@ The main made changes are in the LocalSearch and Individual class. Each move mus
 
 The fitness was also modified to take into account the robust cost.
 
-## Possible improvements
+## Possible improvements
 I did not manage to make the move 8 and 9 working in the local search for our robust pb. These moves are crucial for asymmetric instances.
 To make it work, its a matter of detail (maybe a pb with an index or something, an edge I wrongly delete or add).
 
